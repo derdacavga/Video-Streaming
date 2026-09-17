@@ -29,7 +29,7 @@ const unsigned int serverPort = 8888;
 
 WiFiUDP udp;
 
-#define UDP_CHUNK_SIZE 1430
+#define UDP_CHUNK_SIZE 1440
 
 typedef struct __attribute__((packed)) {
   uint16_t frame_id;
@@ -45,7 +45,6 @@ uint16_t frame_counter = 0;
 void setupLEDs() {
   pinMode(RED_LED_PIN, OUTPUT);
   digitalWrite(RED_LED_PIN, HIGH);
-
   pinMode(FLASH_LED_PIN, OUTPUT);
   digitalWrite(FLASH_LED_PIN, LOW);
 }
@@ -70,19 +69,15 @@ void initCamera() {
   config.pin_sccb_scl = SIOC_GPIO_NUM;
   config.pin_pwdn = PWDN_GPIO_NUM;
   config.pin_reset = RESET_GPIO_NUM;
-
-  config.xclk_freq_hz = 10000000;
+  config.xclk_freq_hz = 16000000;
   config.pixel_format = PIXFORMAT_JPEG;
-  config.frame_size = FRAMESIZE_QVGA;
-  config.jpeg_quality = 10;
+  config.frame_size = FRAMESIZE_QVGA; 
+  config.jpeg_quality = 12;       
   config.fb_count = 2;
+  config.fb_location = CAMERA_FB_IN_PSRAM;
   config.grab_mode = CAMERA_GRAB_LATEST;
 
-  if (esp_camera_init(&config) != ESP_OK) {
-    Serial.println("Camera Init Failed");
-    while (1)
-      ;
-  }
+  esp_camera_init(&config);
 }
 
 void setup() {
@@ -92,28 +87,17 @@ void setup() {
 
   WiFi.mode(WIFI_STA);
   WiFi.begin(ssid, password);
+  WiFi.setTxPower(WIFI_POWER_17dBm);
+  WiFi.setSleep(false);
 
-  WiFi.setTxPower(WIFI_POWER_15dBm);
-
-  Serial.print("Connecting to Viewer AP");
   while (WiFi.status() != WL_CONNECTED) {
-    delay(250);
-    Serial.print(".");
+    delay(100);
   }
-  Serial.println("\nConnected!");
+
+  udp.begin(serverPort);
 }
 
 void loop() {
-  static unsigned long lastFrameTime = 0;
-  const unsigned long frameInterval = 66;
-
-  unsigned long now = millis();
-  if (now - lastFrameTime < frameInterval) {
-    vTaskDelay(pdMS_TO_TICKS(3));
-    return;
-  }
-  lastFrameTime = now;
-
   camera_fb_t *fb = esp_camera_fb_get();
   if (!fb) return;
 
