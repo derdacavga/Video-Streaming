@@ -7,3 +7,9 @@ This project live video stream on esp32-Cam to other esp32s4 board peer-to-peer
 > **Click the image above to watch the full tutorial on YouTube.**
 
 ---
+## 📺 Esp32-Cam Program Flashing
+
+[![Watch the tutorial](https://img.youtube.com/vi/cAyNFaEj0xQ/0.jpg)](https://www.youtube.com/watch?v=cAyNFaEj0xQ)
+> **Click the image above to watch the full tutorial on YouTube.**
+
+---
